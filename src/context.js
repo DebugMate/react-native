@@ -1,5 +1,3 @@
-import DeviceInfo from "react-native-device-info";
-
 class Context {
   constructor() {
     this.error = null;
@@ -7,11 +5,11 @@ class Context {
     this.user = null;
     this.environment = null;
     this.device = {
-      deviceId: DeviceInfo.getDeviceId(),
-      systemName: DeviceInfo.getSystemName(),
-      systemVersion: DeviceInfo.getSystemVersion(),
-      appVersion: DeviceInfo.getVersion(),
-      buildNumber: DeviceInfo.getBuildNumber(),
+      deviceId: "unknown",
+      systemName: "unknown",
+      systemVersion: "unknown",
+      appVersion: "unknown",
+      buildNumber: "unknown",
     };
   }
 
