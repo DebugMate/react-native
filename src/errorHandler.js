@@ -1,16 +1,39 @@
+import { Platform } from "react-native";
+
 const setupGlobalErrorHandlers = (debugmate) => {
-  const handleGlobalError = (error, isFatal) => {
-    console.error("Global Error Captured:", { error, isFatal });
-    debugmate.publish(error);
-  };
+  if (Platform.OS === "web") {
+    const handleGlobalError = (
+      message,
+      source,
+      lineNumber,
+      colNumber,
+      error
+    ) => {
+      if (!error) {
+        error = new Error(message);
+        error.fileName = source;
+        error.lineNumber = lineNumber;
+        error.columnNumber = colNumber;
+      }
 
-  ErrorUtils.setGlobalHandler(handleGlobalError);
+      debugmate.publish(error);
+    };
 
-  return {
-    cleanupErrorHandlers: () => {
-      ErrorUtils.setGlobalHandler(null);
-    },
-  };
+    const handleUnhandledRejection = (event) => {
+      const reason =
+        event.reason instanceof Error ? event.reason : new Error(event.reason);
+      debugmate.publish(reason);
+    };
+
+    window.onerror = handleGlobalError;
+    window.addEventListener("unhandledrejection", handleUnhandledRejection);
+  } else {
+    const handleGlobalError = (error, isFatal) => {
+      debugmate.publish(error);
+    };
+
+    ErrorUtils.setGlobalHandler(handleGlobalError);
+  }
 };
 
 export default setupGlobalErrorHandlers;

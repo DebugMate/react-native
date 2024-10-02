@@ -1,16 +1,46 @@
+import { Platform } from "react-native";
+import Constants from "expo-constants";
+
+let DeviceInfo = null;
+if (Platform.OS !== "web") {
+  try {
+    DeviceInfo = require("react-native-device-info");
+  } catch (e) {
+    console.warn("DeviceInfo not available, using Expo Managed Workflow.");
+  }
+}
+
 class Context {
   constructor() {
     this.error = null;
     this.request = null;
     this.user = null;
     this.environment = null;
-    this.device = {
-      deviceId: "unknown",
+
+    this.context = this.getDeviceInfo();
+  }
+
+  getDeviceInfo() {
+    const defaultInfo = {
       systemName: "unknown",
       systemVersion: "unknown",
-      appVersion: "unknown",
-      buildNumber: "unknown",
     };
+
+    if (Constants.appOwnership === "expo") {
+      return {
+        systemName: Constants.platform?.ios ? "iOS" : "Android",
+        systemVersion: Constants.systemVersion || "unknown",
+      };
+    }
+
+    if (DeviceInfo) {
+      return {
+        systemName: DeviceInfo.getSystemName(),
+        systemVersion: DeviceInfo.getSystemVersion(),
+      };
+    }
+
+    return defaultInfo;
   }
 
   setError(error) {
@@ -39,7 +69,7 @@ class Context {
       request: this.request,
       user: this.user,
       environment: this.environment,
-      device: this.device,
+      context: this.context,
     };
   }
 }

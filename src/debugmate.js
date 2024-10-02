@@ -22,7 +22,12 @@ class Debugmate {
     this.context.setRequest(request);
   }
 
-  publish(error, userContext = null, environmentContext = null) {
+  publish(
+    error,
+    userContext = null,
+    environmentContext = null,
+    requestContext = null
+  ) {
     if (!this.isPublishingAllowed(error)) return;
 
     if (userContext) {
@@ -31,6 +36,10 @@ class Debugmate {
 
     if (environmentContext) {
       this.setEnvironment(environmentContext);
+    }
+
+    if (requestContext) {
+      this.setRequest(requestContext);
     }
 
     const data = this.payload(error);
@@ -100,6 +109,10 @@ class Debugmate {
 
     if (contextPayload.environment) {
       data.environment = contextPayload.environment;
+    }
+
+    if (contextPayload.context) {
+      data.context = contextPayload.context;
     }
 
     return data;
