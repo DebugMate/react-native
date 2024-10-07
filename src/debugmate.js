@@ -2,26 +2,89 @@ import { Context } from "./context.js";
 import { parse } from "./stackTraceParser.js";
 import setupGlobalErrorHandlers from "./errorHandler";
 
+/**
+ * @typedef {Object} User
+ * @property {number} id
+ * @property {string} name
+ * @property {string} email
+ */
+
+/**
+ * @typedef {Object} Environment
+ * @property {string} environment
+ * @property {boolean} debug
+ * @property {string} timezone
+ * @property {string} server
+ * @property {string} database
+ * @property {string} npm
+ */
+
+/**
+ * @typedef {Object} Request
+ * @property {Object} request
+ * @property {Object} headers
+ * @property {Object} query_string
+ * @property {string} body
+ */
+
 class Debugmate {
-  constructor() {
-    this.domain = "";
-    this.token = "";
-    this.enabled = true;
-    this.context = new Context();
+  static instance = null;
+
+  /**
+   * Create a new Debugmate instance or return the existing one.
+   * @param {Object} options - Options for configuration
+   * @param {string} options.domain - The domain for the Debugmate API
+   * @param {string} options.token - The API token for Debugmate
+   * @param {boolean} [options.enabled=true] - Whether the Debugmate error tracking is enabled
+   */
+  constructor(options = {}) {
+    if (!Debugmate.instance) {
+      this.domain = options.domain;
+      this.token = options.token;
+      this.enabled = options.enabled !== undefined ? options.enabled : true;
+      this.context = new Context();
+
+      Debugmate.instance = this;
+    }
+
+    return Debugmate.instance;
   }
 
+  /**
+   * Set the current user information (id, name, email).
+   * @param {User} user - User object with id, name, and email.
+   * @returns {void}
+   */
   setUser(user) {
     this.context.setUser(user);
   }
 
+  /**
+   * Set the current environment information (environment, debug, timezone, server, database, npm).
+   * @param {Environment} environment - Environment object with various environment details.
+   * @returns {void}
+   */
   setEnvironment(environment) {
     this.context.setEnvironment(environment);
   }
 
+  /**
+   * Set the current request information (request, headers, query_string, body).
+   * @param {Request} request - Request object containing request details.
+   * @returns {void}
+   */
   setRequest(request) {
     this.context.setRequest(request);
   }
 
+  /**
+   * Publish an error to the Debugmate API.
+   * @param {Error} error - The error to be reported.
+   * @param {User|null} [userContext=null] - The user context, if available.
+   * @param {Environment|null} [environmentContext=null] - The environment context, if available.
+   * @param {Request|null} [requestContext=null] - The request context, if available.
+   * @returns {void}
+   */
   publish(
     error,
     userContext = null,
@@ -57,6 +120,12 @@ class Debugmate {
       .catch((err) => console.error("Debugmate error:", err));
   }
 
+  /**
+   * Check if publishing errors is allowed based on the presence of the error, domain, and token.
+   * Logs a warning if the error cannot be published.
+   * @param {Error} error - The error to be checked.
+   * @returns {boolean} - True if publishing is allowed, false otherwise.
+   */
   isPublishingAllowed(error) {
     if (!error || !this.enabled || !this.domain || !this.token) {
       console.warn(
@@ -67,6 +136,12 @@ class Debugmate {
     return true;
   }
 
+  /**
+   * Handle the API response after attempting to publish an error.
+   * Logs any errors related to the response.
+   * @param {Response} response - The response from the Debugmate API.
+   * @returns {Promise<void>}
+   */
   async handleResponse(response) {
     if (!response.ok) {
       throw new Error(`Request error: ${response.status}`);
@@ -87,13 +162,18 @@ class Debugmate {
     }
   }
 
+  /**
+   * Construct a payload object with error details and context information for the API.
+   * @param {Error} error - The error to be reported.
+   * @returns {Object} - The payload object formatted for the Debugmate API.
+   */
   payload(error) {
     const trace = this.trace(error);
     let data = {
       exception: error.name,
       message: error.message,
       file: trace[0]?.file || "unknown",
-      type: "web",
+      type: "cli",
       trace: trace,
     };
 
@@ -118,6 +198,12 @@ class Debugmate {
     return data;
   }
 
+  /**
+   * Parse the error stack trace to extract relevant information.
+   * This uses the `stackTraceParser` to extract the file, line, column, and function details.
+   * @param {Error} error - The error object to parse.
+   * @returns {Array<Object>} - The array of trace information.
+   */
   trace(error) {
     const stackTrace = parse(error);
     if (!stackTrace.sources || stackTrace.sources.length === 0) {
@@ -134,6 +220,10 @@ class Debugmate {
     }));
   }
 
+  /**
+   * Set up global error handling to capture uncaught exceptions and promise rejections.
+   * @returns {void}
+   */
   setupGlobalErrorHandling() {
     setupGlobalErrorHandlers(this);
   }
