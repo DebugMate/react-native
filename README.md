@@ -1,10 +1,28 @@
-# Debugmate React Native
+# DebugMate React Native
 
-Debugmate is an error tracking and monitoring tool designed for React Native applications. This package allows you to capture and send error reports along with environment, user, and request context information to a remote API.
+DebugMate is an error tracking and monitoring tool designed for React Native applications. This package allows you to capture and send error reports along with environment, user, and request context information to a remote API.
 
 #### Expo Support
 
-Debugmate works seamlessly with Expo. It automatically detects whether your app is running inside an Expo environment and utilizes `expo-constants` to retrieve device and system information. You don't need to configure anything extra for Expo-specific support.
+DebugMate works seamlessly with Expo. It automatically detects whether your app is running inside an Expo environment and utilizes expo-constants to retrieve device and system information. You don’t need to configure anything extra for Expo-specific support.
+
+#### Singleton Design Pattern
+
+The DebugMate constructor is based on the Singleton pattern, meaning that only one instance of DebugMate will be created during the application’s lifecycle. When you call the constructor multiple times, it will return the same instance. This ensures that all error reporting is consistent throughout the app.
+
+If for any reason you need to reset or reinitialize DebugMate, you can manually reset the singleton instance like this:
+
+```javascript
+// Reset the instance by setting it to null
+Debugmate.instance = null;
+
+// Create a new instance
+const newDebugmate = new Debugmate({
+  domain: "https://your-new-domain.com",
+  token: "new-api-token",
+  enabled: true,
+});
+```
 
 ## Table of Contents
 
@@ -21,7 +39,7 @@ Debugmate works seamlessly with Expo. It automatically detects whether your app 
 
 ## Installation
 
-To install Debugmate for React Native, you can use either npm or yarn:
+To install DebugMate for React Native, you can use either npm:
 
 ```bash
 npm install debugmate-react-native
@@ -31,7 +49,7 @@ npm install debugmate-react-native
 
 #### Basic Setup
 
-o get started with Debugmate, you need to initialize it with your API domain and token. This will allow Debugmate to publish error reports to your server.
+o get started with DebugMate, you need to initialize it with your API domain and token. This will allow Debugmate to publish error reports to your server.
 
 ```javascript
 import Debugmate from "debugmate-react-native";
@@ -98,7 +116,7 @@ debugmate.setRequest(request);
 
 #### Publish Errors
 
-To publish errors manually, you can call the publish method, which will send the error and context information to the Debugmate API.
+To publish errors manually, you can call the publish method, which will send the error and context information to the DebugMate API.
 
 **Important**: When calling the publish method explicitly (e.g., inside a try/catch), if you want to include the userContext, environmentContext, and requestContext, you must pass them as parameters to the publish method. These contexts are **not captured automatically** when you call publish manually.
 
@@ -119,11 +137,11 @@ You can set up global error handling for both caught and uncaught errors in your
 debugmate.setupGlobalErrorHandling();
 ```
 
-This will automatically capture uncaught exceptions and unhandled promise rejections, and send them to the Debugmate API.
+This will automatically capture uncaught exceptions and unhandled promise rejections, and send them to the DebugMate API.
 
 #### Using Error Boundary
 
-To catch errors in React components, it’s recommended to use an ErrorBoundary. Here’s an example of how to implement one with Debugmate:
+To catch errors in React components, it’s recommended to use an ErrorBoundary. Here’s an example of how to implement one with DebugMate:
 
 ```javascript
 import Debugmate from "debugmate-react-native";
@@ -153,7 +171,7 @@ class ErrorBoundary extends Component {
     this.setState({ errorInfo });
     console.log("Error info:", errorInfo);
 
-    // Publish error using Debugmate
+    // Publish error using DebugMate
     this.debugmate.publish(error);
   }
 
@@ -184,7 +202,7 @@ Wrap your application components with this ErrorBoundary to catch and handle err
 
 ## API Reference
 
-### Debugmate Constructor
+### DebugMate Constructor
 
 - **domain:** The API endpoint to which errors are sent (required).
 
