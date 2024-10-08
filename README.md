@@ -98,7 +98,9 @@ debugmate.setRequest(request);
 
 #### Publish Errors
 
-To publish errors manually, you can call the publish method, which will send the error and context information to the Debugmate API. The publish method accepts four parameters: the error, user context, environment context, and request context. If you want to capture request details, you must pass the request context as a parameter to publish.
+To publish errors manually, you can call the publish method, which will send the error and context information to the Debugmate API.
+
+**Important**: When calling the publish method explicitly (e.g., inside a try/catch), if you want to include the userContext, environmentContext, and requestContext, you must pass them as parameters to the publish method. These contexts are **not captured automatically** when you call publish manually.
 
 ```javascript
 try {
