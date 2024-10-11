@@ -5,6 +5,6 @@ module.exports = {
     "^.+\\.(js|jsx|ts|tsx)$": "babel-jest",
   },
   transformIgnorePatterns: [
-    "node_modules/(?!(jest-)?react-native|@react-native|react-navigation|@react-navigation/.*|expo|@expo/.*|@unimodules/.*|unimodules-permissions-interface|sentry-expo|@react-native/js-polyfills)", // Adicionar aqui pacotes que precisam ser transformados
+    "node_modules/(?!(jest-)?react-native|@react-native|react-navigation|@react-navigation/.*|expo|@expo/.*|@unimodules/.*|unimodules-permissions-interface|sentry-expo|@react-native/js-polyfills)",
   ],
 };
