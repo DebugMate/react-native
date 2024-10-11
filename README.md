@@ -96,6 +96,8 @@ debugmate.setEnvironment(environment);
 
 You can track information about the HTTP requests in case an error occurs during a network operation.
 
+**Note:** The request context is only captured when you explicitly call the publish() method. There is no automatic way to capture request details. You must pass the request context manually each time you want to include it in the error report.
+
 ```javascript
 const request = {
   request: {
@@ -110,8 +112,6 @@ const request = {
   query_string: { search: "query" },
   body: JSON.stringify({ data: "payload" }),
 };
-
-debugmate.setRequest(request);
 ```
 
 #### Publish Errors
