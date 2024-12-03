@@ -1,0 +1,29 @@
+{
+  "name": "@debugmate/react-nativejs",
+  "version": "1.0.0",
+  "description": "DebugMate: An error tracking library for React Native application",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "expo-constants": "^16.0.2",
+    "react": "^18.3.1",
+    "react-native": "^0.75.3",
+    "react-native-device-info": "^13.0.0",
+    "react-native-web": "^0.19.12"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.7",
+    "@testing-library/jest-native": "^5.4.3",
+    "@testing-library/react-native": "^12.7.2",
+    "babel-jest": "^29.7.0",
+    "jest": "^29.7.0",
+    "jest-expo": "^51.0.4",
+    "metro-react-native-babel-preset": "^0.77.0",
+    "react-native-testing-library": "^2.2.0",
+    "react-test-renderer": "^18.3.1"
+  }
+}
