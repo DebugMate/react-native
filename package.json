@@ -1,7 +1,7 @@
 {
-  "name": "debugmate-react-native",
-  "version": "1.0.1",
-  "description": "",
+  "name": "@debugmate/react-nativejs",
+  "version": "1.0.0",
+  "description": "DebugMate: An error tracking library for React Native application",
   "main": "index.js",
   "scripts": {
     "test": "jest"
