@@ -141,61 +141,31 @@ This will automatically capture uncaught exceptions and unhandled promise reject
 
 #### Using Error Boundary
 
-To catch errors in React components, it’s recommended to use an ErrorBoundary. Here’s an example of how to implement one with DebugMate:
+Now you can wrap your app components with the ErrorBoundary and pass the environment variables as props. Here's how you can do it:
 
 ```javascript
-import Debugmate from "debugmate-react-native";
+import React from 'react';
+import { View, Text } from 'react-native';
+import ErrorBoundary from './components/ErrorBoundary';
 
-class ErrorBoundary extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false, errorInfo: null };
+const App = () => {
+  return (
+    <ErrorBoundary
+      domain={Config.DEBUGMATE_DOMAIN}
+      token={Config.DEBUGMATE_TOKEN}
+      enabled={Config.DEBUGMATE_ENABLED === 'true'} // Convert the string to boolean
+      user={{ id: 'user123', name: 'John Doe' }}  // Example user data
+      environment="production"  // Example environment
+    >
+      <View>
+        <Text>App Content</Text>
+      </View>
+    </ErrorBoundary>
+  );
+};
 
-    this.debugmate = new Debugmate({
-      domain: DEBUGMATE_DOMAIN,
-      token: DEBUGMATE_TOKEN,
-      enabled: DEBUGMATE_ENABLED,
-    });
+export default App;
 
-    this.debugmate.setUser(user);
-    this.debugmate.setEnvironment(environment);
-
-    this.debugmate.setupGlobalErrorHandling();
-  }
-
-  static getDerivedStateFromError(error) {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error, errorInfo) {
-    this.setState({ errorInfo });
-    console.log("Error info:", errorInfo);
-
-    // Publish error using DebugMate
-    this.debugmate.publish(error);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <View style={styles.container}>
-          <Text style={styles.errorText}>Something went wrong.</Text>
-          <Text style={styles.errorDetails}>
-            {this.state.errorInfo?.componentStack}
-          </Text>
-          <Button
-            title="Try again"
-            onPress={() => this.setState({ hasError: false })}
-          />
-        </View>
-      );
-    }
-
-    return this.props.children;
-  }
-}
-
-export default ErrorBoundary;
 ```
 
 Wrap your application components with this ErrorBoundary to catch and handle errors more gracefully.
