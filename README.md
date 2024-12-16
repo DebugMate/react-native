@@ -34,7 +34,6 @@ const newDebugmate = new Debugmate({
   - [Set Request Context](#set-request-context)
   - [Publish Errors](#publish-errors)
   - [Automatic Error Handling](#automatic-error-handling)
-  - [Using Error Boundaries](#using-error-boundaries)
 - [API Reference](#api-reference)
 
 ## Installation
@@ -42,23 +41,53 @@ const newDebugmate = new Debugmate({
 To install DebugMate for React Native, you can use either npm:
 
 ```bash
-npm install debugmate-react-native
+npm i @debugmate/react-nativejs
 ```
 
 ## Usage
 
 #### Basic Setup
 
-o get started with DebugMate, you need to initialize it with your API domain and token. This will allow Debugmate to publish error reports to your server.
+Initialize DebugMate by wrapping your application with the DebugmateProvider. Provide your API domain, token, and any additional context like user and environment.
 
-```javascript
-import Debugmate from "debugmate-react-native";
+```tsx
+// app/_layout
 
-const debugmate = new Debugmate({
-  domain: "https://your-domain.com",
-  token: "your-api-token",
-  enabled: true, // Enable or disable error reporting
-});
+import {  ThemeProvider } from '@react-navigation/native';
+import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { DebugmateProvider } from '@debugmate/react-nativejs';
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <DebugmateProvider
+        domain="https://your-domain.com"
+        token="your-api-token"
+        enabled={true}
+        user={{
+          id: 1,
+          name: "John Doe",
+          email: "john.doe@example.com",
+        }}
+        environment={{
+          environment: "production",
+          debug: false,
+          timezone: "UTC",
+          server: "nginx",
+          database: "PostgreSQL",
+        }}
+      >
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="+not-found" />
+      </Stack>
+      </DebugmateProvider>
+      <StatusBar style="auto" />
+    </ThemeProvider>
+  );
+}
+
 ```
 
 #### Set User Context
@@ -66,13 +95,15 @@ const debugmate = new Debugmate({
 You can attach user information to the error reports to get more context about which user experienced the error.
 
 ```javascript
-const user = {
-  id: 123,
-  name: "John Doe",
-  email: "john@example.com",
-};
+import { useDebugmateContext } from '@debugmate/react-nativejs';
 
-debugmate.setUser(user);
+const debugmate = useDebugmateContext();
+
+debugmate.setUser({
+  id: 123,
+  name: "Jane Doe",
+  email: "jane.doe@example.com",
+});
 ```
 
 #### Set Environment Context
@@ -80,6 +111,10 @@ debugmate.setUser(user);
 You can also set the environment context, which can include details about the application, server, and other important metadata.
 
 ```javascript
+import { useDebugmateContext } from '@debugmate/react-nativejs';
+
+const debugmate = useDebugmateContext();
+
 const environment = {
   environment: "production", // 'development', 'staging', 'production', etc.
   debug: false,
@@ -99,6 +134,10 @@ You can track information about the HTTP requests in case an error occurs during
 **Note:** The request context is only captured when you explicitly call the publish() method. There is no automatic way to capture request details. You must pass the request context manually each time you want to include it in the error report.
 
 ```javascript
+import { useDebugmateContext } from '@debugmate/react-nativejs';
+
+const debugmate = useDebugmateContext();
+
 const request = {
   request: {
     url: "https://your-api.com/endpoint",
@@ -121,6 +160,10 @@ To publish errors manually, you can call the publish method, which will send the
 **Important**: When calling the publish method explicitly (e.g., inside a try/catch), if you want to include the userContext, environmentContext, and requestContext, you must pass them as parameters to the publish method. These contexts are **not captured automatically** when you call publish manually.
 
 ```javascript
+import { useDebugmateContext } from '@debugmate/react-nativejs';
+
+const debugmate = useDebugmateContext();
+
 try {
   // Simulate some code that throws an error
   throw new Error("Something went wrong!");
@@ -138,67 +181,6 @@ debugmate.setupGlobalErrorHandling();
 ```
 
 This will automatically capture uncaught exceptions and unhandled promise rejections, and send them to the DebugMate API.
-
-#### Using Error Boundary
-
-To catch errors in React components, it’s recommended to use an ErrorBoundary. Here’s an example of how to implement one with DebugMate:
-
-```javascript
-import Debugmate from "debugmate-react-native";
-
-class ErrorBoundary extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false, errorInfo: null };
-
-    this.debugmate = new Debugmate({
-      domain: DEBUGMATE_DOMAIN,
-      token: DEBUGMATE_TOKEN,
-      enabled: DEBUGMATE_ENABLED,
-    });
-
-    this.debugmate.setUser(user);
-    this.debugmate.setEnvironment(environment);
-
-    this.debugmate.setupGlobalErrorHandling();
-  }
-
-  static getDerivedStateFromError(error) {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error, errorInfo) {
-    this.setState({ errorInfo });
-    console.log("Error info:", errorInfo);
-
-    // Publish error using DebugMate
-    this.debugmate.publish(error);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <View style={styles.container}>
-          <Text style={styles.errorText}>Something went wrong.</Text>
-          <Text style={styles.errorDetails}>
-            {this.state.errorInfo?.componentStack}
-          </Text>
-          <Button
-            title="Try again"
-            onPress={() => this.setState({ hasError: false })}
-          />
-        </View>
-      );
-    }
-
-    return this.props.children;
-  }
-}
-
-export default ErrorBoundary;
-```
-
-Wrap your application components with this ErrorBoundary to catch and handle errors more gracefully.
 
 ## API Reference
 
