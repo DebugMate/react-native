@@ -1,6 +1,6 @@
 import React, { createContext, useContext } from 'react';
 import { useDebugmateState } from '../contexts/Debugmate';
-import ErrorBoundary from '../component/ErrorBoundary';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 /**
  * DebugmateContext provides access to the Debugmate state throughout the component tree.
@@ -28,15 +28,25 @@ export const useDebugmateContext = () => useContext(DebugmateContext);
  * @param {string} props.domain - The domain for Debugmate error reporting.
  * @param {string} props.token - The token used for authentication with Debugmate.
  * @param {boolean} props.enabled - Flag to enable or disable Debugmate error handling.
+ * @param {Object}  props.user - Optional user information to associate with error reports.
+ * @param {Object}  props.environment - Optional environment metadata to provide additional context.
+ * @param {Object}  props.request
  * 
  * @returns {JSX.Element} - The rendered provider and its children, wrapped in an ErrorBoundary.
  */
-export const DebugmateProvider = ({ children, domain, token, enabled }) => {
-  const debugmate = useDebugmateState({ domain, token, enabled });
+export const DebugmateProvider = ({ children, domain, token, enabled, user, environment, request}) => {
+  const debugmate = useDebugmateState({ domain, token, enabled, user, environment, request });
 
   return (
     <DebugmateContext.Provider value={debugmate}>
-      <ErrorBoundary domain={domain} token={token} enabled={enabled}>
+      <ErrorBoundary 
+        domain={domain}
+        token={token} 
+        enabled={enabled} 
+        user={user} 
+        environment={environment} 
+        request={request}
+      >
         {children}
       </ErrorBoundary>
     </DebugmateContext.Provider>

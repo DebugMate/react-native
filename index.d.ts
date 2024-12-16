@@ -6,6 +6,9 @@ export interface DebugmateProviderProps {
   domain: string;
   token: string;
   enabled: boolean;
+  user: object;
+  environment: object;
+  request: object;
 }
 
 export const useDebugmateContext: () => DebugmateState;
@@ -42,7 +45,14 @@ export interface Request {
   body?: string;
 }
 
-export const ErrorBoundary: React.ComponentType<{ domain: string; token: string; enabled: boolean }>;
+export const ErrorBoundary: React.ComponentType<{ 
+  domain: string; 
+  token: string; 
+  enabled: boolean,  
+  user: object, 
+  environment: object,
+  request: object 
+}>;
 
 export { DebugmateProvider, useDebugmateContext, useDebugmateState, ErrorBoundary };
 export default Debugmate;

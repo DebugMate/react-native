@@ -9,10 +9,11 @@ import Debugmate from '../debugmate';
  * @param {boolean} enabled - Flag to enable or disable error tracking.
  * @param {Object}  user - Optional user information to associate with error reports.
  * @param {Object}  environment - Optional environment metadata to provide additional context.
+ * @param {Object}  request
  *
  * @returns {Object} The initialized Debugmate instance.
  */
-export const useDebugmateState = ({ domain, token, enabled, user, environment }) => {
+export const useDebugmateState = ({ domain, token, enabled, user, environment, request }) => {
   const debugmate = useMemo(() => new Debugmate({
     domain,
     token,
@@ -28,6 +29,10 @@ export const useDebugmateState = ({ domain, token, enabled, user, environment })
 
     if (environment) {
       debugmate.setEnvironment(environment);
+    }
+
+    if (request) {
+      debugmate.setRequest(request);
     }
 
     return () => {

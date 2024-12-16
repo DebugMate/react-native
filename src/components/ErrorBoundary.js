@@ -1,73 +1,95 @@
-import React from "react";
-import { Button, Text, StyleSheet, ScrollView } from "react-native";
-import { useDebugmateContext } from "../Providers/DebugmateProvider";
+import React, { Component } from 'react';
+import Debugmate from '../debugmate';
 
-class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false, errorInfo: null };
+/**
+ * ErrorBoundary is a React component that catches JavaScript errors in its child component tree,
+ * logs them to an external service, and displays a fallback UI.
+ *
+ * It uses the Debugmate service to report the errors.
+ *
+ * @component
+ * @example
+ * // Example usage:
+ * <ErrorBoundary domain="your-domain" token="your-token" enabled={true}>
+ *   <YourComponent />
+ * </ErrorBoundary>
+ */
+class ErrorBoundary extends Component {
+    /**
+     * Creates an instance of the ErrorBoundary component.
+     *
+     * @param {object} props - The properties passed to this component.
+     * @param {string} props.domain - The domain for Debugmate error reporting.
+     * @param {string} props.token - The token used to authenticate with Debugmate.
+     * @param {boolean} props.enabled - Flag to enable or disable the Debugmate service.
+     * @param {Object}  props.user - Optional user information to associate with error reports.
+     * @param {Object}  props.environment - Optional environment metadata to provide additional context.
+     * @param {Object}  props.request
+     */
+    constructor(props) {
+        super(props);
+        this.state = { hasError: false, error: null };
 
-    this.debugmate = useDebugmateContext();
-  }
+        const { domain, token, enabled, user, environment, request } = props;
 
-  componentDidMount() {
-    this.debugmate.setupGlobalErrorHandling();
-  }
+        this.debugmate = new Debugmate({
+            domain,
+            token,
+            enabled
+        });
 
-  static getDerivedStateFromError(error) {
-    return { hasError: true };
-  }
+        if (user) {
+            this.debugmate.setUser(user);
+        }
+      
+        if (environment) {
+            this.debugmate.setEnvironment(environment);
+        }
+      
+        if (request) {
+            this.debugmate.setRequest(request);
+        }
 
-  componentDidCatch(error, errorInfo) {
-    this.setState({ errorInfo });
-    console.log("Error info:", errorInfo);
-    this.debugmate.publish(error);
-  }
-
-  handleTryAgain = () => {
-    this.setState({ hasError: false, errorInfo: null });
-  };
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <ScrollView contentContainerStyle={styles.container}>
-          <Text style={styles.errorText}>Something went wrong.</Text>
-          <Text style={styles.errorDetails}>
-            {this.state.errorInfo ? this.state.errorInfo.componentStack : ''}
-          </Text>
-          <Button
-            title="Try again"
-            onPress={this.handleTryAgain}
-            color="#841584" 
-          />
-        </ScrollView>
-      );
+        this.debugmate.setupGlobalErrorHandling();
     }
 
-    return this.props.children;
-  }
-}
+    /**
+     * This lifecycle method is invoked when an error is thrown in a child component.
+     * It updates the state to reflect the error.
+     *
+     * @param {Error} error - The error that was thrown.
+     * @returns {object} - The updated state with the error information.
+     */
+    static getDerivedStateFromError(error) {
+        return { hasError: true, error: error };
+    }
 
-const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    paddingBottom: 50,
-  },
-  errorText: {
-    color: 'red',
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  errorDetails: {
-    color: 'gray',
-    marginTop: 10,
-    textAlign: 'center',
-  },
-});
+    /**
+     * This lifecycle method is invoked after an error has been thrown.
+     * It allows the error details to be logged and published to Debugmate.
+     *
+     * @param {Error} error - The error that was thrown.
+     * @param {object} errorInfo - The additional error information such as the component stack.
+     */
+    componentDidCatch(error, errorInfo) {
+        this.setState({ errorInfo });
+        console.error("Error info:", errorInfo);
+
+        this.debugmate.publish(error);
+    }
+
+    /**
+     * Renders the component. If an error has been caught, a fallback UI is shown.
+     *
+     * @returns {JSX.Element} - The rendered component or fallback UI.
+     */
+    render() {
+        if (this.state.hasError) {
+            return <h1>Something went wrong: {this.state.error?.message}</h1>;
+        }
+
+        return this.props.children;
+    }
+}
 
 export default ErrorBoundary;
