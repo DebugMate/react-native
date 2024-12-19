@@ -1,4 +1,4 @@
-import { Context } from "./context.js";
+import Context from "./context.js";
 import { parse } from "./stackTraceParser.js";
 import setupGlobalErrorHandlers from "./errorHandler";
 
@@ -227,6 +227,17 @@ class Debugmate {
   setupGlobalErrorHandling() {
     setupGlobalErrorHandlers(this);
   }
+
+  /**
+    * Clean up global error handling by removing the error handlers previously set up.
+    * This function should be called when the error handling setup is no longer needed.
+    * @returns {void}
+    */
+  cleanupGlobalErrorHandling() {
+    if (this.errorHandlers) {
+        this.errorHandlers.cleanupErrorHandlers();
+    }
+}
 }
 
 export default Debugmate;
