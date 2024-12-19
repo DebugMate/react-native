@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import Debugmate from '../debugmate';
 
 /**
@@ -85,11 +86,32 @@ class ErrorBoundary extends Component {
      */
     render() {
         if (this.state.hasError) {
-            return <h1>Something went wrong: {this.state.error?.message}</h1>;
+            return (
+                <View style={styles.errorContainer}>
+                    <Text style={styles.errorText}>
+                        Something went wrong: {this.state.error?.message}
+                    </Text>
+                </View>
+            );
         }
 
         return this.props.children;
     }
 }
+
+const styles = StyleSheet.create({
+    errorContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'white',
+        padding: 20,
+    },
+    errorText: {
+        fontSize: 16,
+        color: 'red',
+        textAlign: 'center',
+    },
+});
 
 export default ErrorBoundary;

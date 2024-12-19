@@ -38,17 +38,42 @@ const newDebugmate = new Debugmate({
 
 ## Installation
 
-To install DebugMate for React Native, you can use either npm:
+### For React Native Projects with Expo
+
+To install DebugMate in a project using Expo, simply run the following command:
 
 ```bash
 npm i @debugmate/react-nativejs
 ```
 
+The package comes with built-in support for Expo, and no additional configuration is necessary. Just wrap your app with the DebugmateProvider as shown in the usage section.
+
+### For React Native Projects Without Expo (React Native CLI)
+
+To install DebugMate in a React Native project without Expo, follow these steps:
+
+1. Install the necessary packages using npm:
+
+```bash
+npm install react-native-device-info --save
+npm install @debugmate/react-nativejs --save
+```
+
+2. After installing the packages, it is necessary to clear the cache to ensure the dependencies are configured properly. Run the following command:
+
+```bash
+npx react-native start --reset-cache
+```
+3. Now, you can proceed with the configuration and usage of DebugMate as described in the following sections.
+
+
 ## Usage
 
-#### Basic Setup
+### Basic Setup
 
-Initialize DebugMate by wrapping your application with the DebugmateProvider. Provide your API domain, token, and any additional context like user and environment.
+#### For React Native Projects with Expo
+
+In Expo projects, you can use DebugmateProvider directly to integrate DebugMate without any additional setup. Here’s an example of how you can initialize DebugMate within an Expo-based application:
 
 ```tsx
 // app/_layout
@@ -88,6 +113,112 @@ export default function RootLayout() {
   );
 }
 
+```
+
+#### For React Native Projects Without Expo (React Native CLI)
+
+Modify your App.tsx (or equivalent entry file):
+
+```tsx
+// App.tsx
+
+import { DebugmateProvider } from '@debugmate/react-nativejs';
+import React from 'react';
+import { SafeAreaView, ScrollView, StatusBar, Text, View, StyleSheet, useColorScheme } from 'react-native';
+
+type SectionProps = {
+  title: string;
+};
+
+function Section({ children, title }: SectionProps): React.JSX.Element {
+  const isDarkMode = useColorScheme() === 'dark';
+  return (
+    <View style={styles.sectionContainer}>
+      <Text
+        style={[
+          styles.sectionTitle,
+          { color: isDarkMode ? 'white' : 'black' },
+        ]}>
+        {title}
+      </Text>
+      <Text
+        style={[
+          styles.sectionDescription,
+          { color: isDarkMode ? 'lightgray' : 'darkgray' },
+        ]}>
+        {children}
+      </Text>
+    </View>
+  );
+}
+
+function App(): React.JSX.Element {
+  const isDarkMode = useColorScheme() === 'dark';
+
+  const backgroundStyle = {
+    backgroundColor: isDarkMode ? '#1e1e1e' : '#f0f0f0',
+  };
+
+  return (
+    <SafeAreaView style={backgroundStyle}>
+      <DebugmateProvider
+        domain="https://your-domain.com"
+        token="your-api-token"
+        enabled={true}
+        user={{
+          id: 1,
+          name: "John Doe",
+          email: "john.doe@example.com",
+        }}
+        environment={{
+          environment: "production",
+          debug: false,
+          timezone: "UTC",
+          server: "nginx",
+          database: "PostgreSQL",
+        }}
+      >
+        <StatusBar
+          barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+          backgroundColor={backgroundStyle.backgroundColor}
+        />
+        <ScrollView contentInsetAdjustmentBehavior="automatic" style={backgroundStyle}>
+          <Section title="Step One">
+            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
+            screen and then come back to see your edits.
+          </Section>
+          <Section title="See Your Changes">
+            Reload the app to see your changes.
+          </Section>
+          <Section title="Debug">
+            Debug your app with enhanced error tracking.
+          </Section>
+        </ScrollView>
+      </DebugmateProvider>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  sectionContainer: {
+    marginTop: 32,
+    paddingHorizontal: 24,
+  },
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: '600',
+  },
+  sectionDescription: {
+    marginTop: 8,
+    fontSize: 18,
+    fontWeight: '400',
+  },
+  highlight: {
+    fontWeight: '700',
+  },
+});
+
+export default App;
 ```
 
 #### Set User Context

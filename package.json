@@ -7,6 +7,17 @@
   "scripts": {
     "test": "jest"
   },
+  "keywords": [
+    "error-tracking",
+    "debugmate",
+    "react-native",
+    "monitoring",
+    "error-handling",
+    "debugging",
+    "native",
+    "mobile",
+    "react"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
