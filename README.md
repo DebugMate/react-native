@@ -34,31 +34,191 @@ const newDebugmate = new Debugmate({
   - [Set Request Context](#set-request-context)
   - [Publish Errors](#publish-errors)
   - [Automatic Error Handling](#automatic-error-handling)
-  - [Using Error Boundaries](#using-error-boundaries)
 - [API Reference](#api-reference)
 
 ## Installation
 
-To install DebugMate for React Native, you can use either npm:
+### For React Native Projects with Expo
+
+To install DebugMate in a project using Expo, simply run the following command:
 
 ```bash
-npm install debugmate-react-native
+npm i @debugmate/react-nativejs
 ```
+
+The package comes with built-in support for Expo, and no additional configuration is necessary. Just wrap your app with the DebugmateProvider as shown in the usage section.
+
+### For React Native Projects Without Expo (React Native CLI)
+
+To install DebugMate in a React Native project without Expo, follow these steps:
+
+1. Install the necessary packages using npm:
+
+```bash
+npm install react-native-device-info --save
+npm install @debugmate/react-nativejs --save
+```
+
+2. After installing the packages, it is necessary to clear the cache to ensure the dependencies are configured properly. Run the following command:
+
+```bash
+npx react-native start --reset-cache
+```
+3. Now, you can proceed with the configuration and usage of DebugMate as described in the following sections.
+
 
 ## Usage
 
-#### Basic Setup
+### Basic Setup
 
-o get started with DebugMate, you need to initialize it with your API domain and token. This will allow Debugmate to publish error reports to your server.
+#### For React Native Projects with Expo
 
-```javascript
-import Debugmate from "debugmate-react-native";
+In Expo projects, you can use DebugmateProvider directly to integrate DebugMate without any additional setup. Here’s an example of how you can initialize DebugMate within an Expo-based application:
 
-const debugmate = new Debugmate({
-  domain: "https://your-domain.com",
-  token: "your-api-token",
-  enabled: true, // Enable or disable error reporting
+```tsx
+// app/_layout
+
+import {  ThemeProvider } from '@react-navigation/native';
+import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { DebugmateProvider } from '@debugmate/react-nativejs';
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <DebugmateProvider
+        domain="https://your-domain.com"
+        token="your-api-token"
+        enabled={true}
+        user={{
+          id: 1,
+          name: "John Doe",
+          email: "john.doe@example.com",
+        }}
+        environment={{
+          environment: "production",
+          debug: false,
+          timezone: "UTC",
+          server: "nginx",
+          database: "PostgreSQL",
+        }}
+      >
+      <Stack>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="+not-found" />
+      </Stack>
+      </DebugmateProvider>
+      <StatusBar style="auto" />
+    </ThemeProvider>
+  );
+}
+
+```
+
+#### For React Native Projects Without Expo (React Native CLI)
+
+Modify your App.tsx (or equivalent entry file):
+
+```tsx
+// App.tsx
+
+import { DebugmateProvider } from '@debugmate/react-nativejs';
+import React from 'react';
+import { SafeAreaView, ScrollView, StatusBar, Text, View, StyleSheet, useColorScheme } from 'react-native';
+
+type SectionProps = {
+  title: string;
+};
+
+function Section({ children, title }: SectionProps): React.JSX.Element {
+  const isDarkMode = useColorScheme() === 'dark';
+  return (
+    <View style={styles.sectionContainer}>
+      <Text
+        style={[
+          styles.sectionTitle,
+          { color: isDarkMode ? 'white' : 'black' },
+        ]}>
+        {title}
+      </Text>
+      <Text
+        style={[
+          styles.sectionDescription,
+          { color: isDarkMode ? 'lightgray' : 'darkgray' },
+        ]}>
+        {children}
+      </Text>
+    </View>
+  );
+}
+
+function App(): React.JSX.Element {
+  const isDarkMode = useColorScheme() === 'dark';
+
+  const backgroundStyle = {
+    backgroundColor: isDarkMode ? '#1e1e1e' : '#f0f0f0',
+  };
+
+  return (
+    <SafeAreaView style={backgroundStyle}>
+      <DebugmateProvider
+        domain="https://your-domain.com"
+        token="your-api-token"
+        enabled={true}
+        user={{
+          id: 1,
+          name: "John Doe",
+          email: "john.doe@example.com",
+        }}
+        environment={{
+          environment: "production",
+          debug: false,
+          timezone: "UTC",
+          server: "nginx",
+          database: "PostgreSQL",
+        }}
+      >
+        <StatusBar
+          barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+          backgroundColor={backgroundStyle.backgroundColor}
+        />
+        <ScrollView contentInsetAdjustmentBehavior="automatic" style={backgroundStyle}>
+          <Section title="Step One">
+            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
+            screen and then come back to see your edits.
+          </Section>
+          <Section title="See Your Changes">
+            Reload the app to see your changes.
+          </Section>
+          <Section title="Debug">
+            Debug your app with enhanced error tracking.
+          </Section>
+        </ScrollView>
+      </DebugmateProvider>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  sectionContainer: {
+    marginTop: 32,
+    paddingHorizontal: 24,
+  },
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: '600',
+  },
+  sectionDescription: {
+    marginTop: 8,
+    fontSize: 18,
+    fontWeight: '400',
+  },
+  highlight: {
+    fontWeight: '700',
+  },
 });
+
+export default App;
 ```
 
 #### Set User Context
@@ -66,13 +226,15 @@ const debugmate = new Debugmate({
 You can attach user information to the error reports to get more context about which user experienced the error.
 
 ```javascript
-const user = {
-  id: 123,
-  name: "John Doe",
-  email: "john@example.com",
-};
+import { useDebugmateContext } from '@debugmate/react-nativejs';
 
-debugmate.setUser(user);
+const debugmate = useDebugmateContext();
+
+debugmate.setUser({
+  id: 123,
+  name: "Jane Doe",
+  email: "jane.doe@example.com",
+});
 ```
 
 #### Set Environment Context
@@ -80,6 +242,10 @@ debugmate.setUser(user);
 You can also set the environment context, which can include details about the application, server, and other important metadata.
 
 ```javascript
+import { useDebugmateContext } from '@debugmate/react-nativejs';
+
+const debugmate = useDebugmateContext();
+
 const environment = {
   environment: "production", // 'development', 'staging', 'production', etc.
   debug: false,
@@ -99,6 +265,10 @@ You can track information about the HTTP requests in case an error occurs during
 **Note:** The request context is only captured when you explicitly call the publish() method. There is no automatic way to capture request details. You must pass the request context manually each time you want to include it in the error report.
 
 ```javascript
+import { useDebugmateContext } from '@debugmate/react-nativejs';
+
+const debugmate = useDebugmateContext();
+
 const request = {
   request: {
     url: "https://your-api.com/endpoint",
@@ -121,6 +291,10 @@ To publish errors manually, you can call the publish method, which will send the
 **Important**: When calling the publish method explicitly (e.g., inside a try/catch), if you want to include the userContext, environmentContext, and requestContext, you must pass them as parameters to the publish method. These contexts are **not captured automatically** when you call publish manually.
 
 ```javascript
+import { useDebugmateContext } from '@debugmate/react-nativejs';
+
+const debugmate = useDebugmateContext();
+
 try {
   // Simulate some code that throws an error
   throw new Error("Something went wrong!");
@@ -138,67 +312,6 @@ debugmate.setupGlobalErrorHandling();
 ```
 
 This will automatically capture uncaught exceptions and unhandled promise rejections, and send them to the DebugMate API.
-
-#### Using Error Boundary
-
-To catch errors in React components, it’s recommended to use an ErrorBoundary. Here’s an example of how to implement one with DebugMate:
-
-```javascript
-import Debugmate from "debugmate-react-native";
-
-class ErrorBoundary extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false, errorInfo: null };
-
-    this.debugmate = new Debugmate({
-      domain: DEBUGMATE_DOMAIN,
-      token: DEBUGMATE_TOKEN,
-      enabled: DEBUGMATE_ENABLED,
-    });
-
-    this.debugmate.setUser(user);
-    this.debugmate.setEnvironment(environment);
-
-    this.debugmate.setupGlobalErrorHandling();
-  }
-
-  static getDerivedStateFromError(error) {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error, errorInfo) {
-    this.setState({ errorInfo });
-    console.log("Error info:", errorInfo);
-
-    // Publish error using DebugMate
-    this.debugmate.publish(error);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <View style={styles.container}>
-          <Text style={styles.errorText}>Something went wrong.</Text>
-          <Text style={styles.errorDetails}>
-            {this.state.errorInfo?.componentStack}
-          </Text>
-          <Button
-            title="Try again"
-            onPress={() => this.setState({ hasError: false })}
-          />
-        </View>
-      );
-    }
-
-    return this.props.children;
-  }
-}
-
-export default ErrorBoundary;
-```
-
-Wrap your application components with this ErrorBoundary to catch and handle errors more gracefully.
 
 ## API Reference
 
